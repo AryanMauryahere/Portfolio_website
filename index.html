@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#7ee8fa" />
+  <title>Aryan Maurya — Interactive Portfolio</title>
+  <style>
+    :root{
+      --sky:#86e9ff;
+      --sky2:#c7f7ff;
+      --navy:#10233f;
+      --ink:#13223b;
+      --white:#fffdf4;
+      --paper:#fff9dc;
+      --red:#ef5b52;
+      --red2:#c83b40;
+      --blue:#2c73d2;
+      --green:#58b26d;
+      --yellow:#ffd95a;
+      --brown:#6c4a35;
+      --dark:#0d1730;
+      --shadow: 0 8px 0 rgba(16,35,63,.18);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--ink);
+      background:#87eaff;
+      font-family:"Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow-x:hidden;
+    }
+    a{color:inherit}
+    button{font:inherit}
+
+    .hud{
+      position:fixed;
+      inset:14px 14px auto 14px;
+      z-index:100;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      pointer-events:none;
+    }
+    .hud-card{
+      background:rgba(255,253,244,.92);
+      border:4px solid var(--navy);
+      box-shadow:var(--shadow);
+      padding:9px 12px;
+      pointer-events:auto;
+      backdrop-filter: blur(4px);
+    }
+    .brand{font-weight:900; letter-spacing:.04em}
+    .progress-wrap{
+      width:min(42vw,360px);
+      height:18px;
+      padding:2px;
+    }
+    .progress{
+      width:0%;
+      height:100%;
+      background:var(--red);
+      transition:width .15s linear;
+    }
+
+    .world{
+      position:relative;
+      min-height:100vh;
+    }
+    .section{
+      position:relative;
+      min-height:100vh;
+      padding:120px clamp(20px,5vw,90px) 120px;
+      overflow:hidden;
+      isolation:isolate;
+    }
+    .section-inner{
+      width:min(1180px, 100%);
+      margin:0 auto;
+      position:relative;
+      z-index:10;
+    }
+
+    /* sky */
+    .sky{
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255,255,255,.75) 0 28px, transparent 29px),
+        radial-gradient(circle at 88% 12%, rgba(255,255,255,.8) 0 38px, transparent 39px),
+        linear-gradient(var(--sky),var(--sky2));
+    }
+    .mountains{
+      position:absolute;
+      inset:auto 0 0 0;
+      height:52%;
+      z-index:1;
+      pointer-events:none;
+    }
+    .mountain{position:absolute; bottom:0; width:0;height:0;border-left:150px solid transparent;border-right:150px solid transparent;border-bottom:300px solid #68c8d7}
+    .m1{left:2%}.m2{left:22%;border-bottom-color:#56bacd;border-bottom-width:360px}.m3{left:42%;border-bottom-color:#74d2db;border-bottom-width:290px}.m4{left:62%;border-bottom-color:#52b5ca;border-bottom-width:390px}.m5{left:84%;border-bottom-color:#74d2db;border-bottom-width:320px}
+    .ground{
+      position:absolute; left:0; right:0; bottom:0; height:19%;
+      background:repeating-linear-gradient(90deg,#6fc774 0 32px,#63bc68 32px 64px);
+      border-top:6px solid #4a9552;
+      z-index:2;
+    }
+    .pixel-sun{
+      position:absolute; width:94px;height:94px; right:9%; top:15%;
+      background:var(--yellow); border:6px solid #e5b933; box-shadow:12px 12px 0 rgba(16,35,63,.12);
+      image-rendering:pixelated;
+    }
+
+    /* title */
+    .hero{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:50px;
+      align-items:center;
+    }
+    .kicker{
+      display:inline-block;
+      background:var(--red); color:white;
+      border:5px solid var(--navy); padding:8px 12px;
+      font-weight:900; box-shadow:6px 6px 0 var(--navy);
+      transform:rotate(-1deg);
+    }
+    h1{
+      font-size:clamp(44px,8vw,96px);
+      line-height:.9; margin:20px 0 16px;
+      text-transform:uppercase;
+      letter-spacing:-.04em;
+      text-shadow:7px 7px 0 rgba(16,35,63,.15);
+    }
+    .lead{
+      font-size:clamp(18px,2.2vw,25px);
+      line-height:1.45; max-width:720px;
+      background:rgba(255,253,244,.8); border:5px solid var(--navy);
+      padding:18px; box-shadow:10px 10px 0 var(--navy);
+    }
+    .hero-card{
+      background:var(--paper); border:6px solid var(--navy); padding:24px;
+      box-shadow:16px 16px 0 var(--navy);
+      transform:rotate(2deg);
+    }
+    .hero-card h3{margin:0 0 10px}
+    .hero-card p{margin:.5rem 0;line-height:1.55}
+    .scroll-cue{
+      position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
+      border:5px solid var(--navy); background:var(--white); padding:12px 15px;
+      box-shadow:6px 6px 0 var(--navy);
+      animation:bob 1.2s ease-in-out infinite;
+    }
+    @keyframes bob{50%{transform:translateX(-50%) translateY(-8px)}}
+
+    /* character */
+    .runner{
+      position:fixed;
+      left:clamp(16px,8vw,120px);
+      bottom:clamp(24px,7vh,68px);
+      z-index:70;
+      width:62px;height:86px;
+      transition:left .25s ease, transform .2s ease;
+      pointer-events:none;
+    }
+    .char-head,.char-body,.char-leg,.char-arm{
+      position:absolute;
+      border:4px solid var(--navy);
+      image-rendering:pixelated;
+    }
+    .char-head{width:42px;height:38px;left:8px;top:2px;background:#ffd2a3}
+    .char-head:before{
+      content:""; position:absolute; left:3px; top:-12px; width:31px; height:13px; background:#172949; border:4px solid var(--navy);
+    }
+    .char-head:after{
+      content:""; position:absolute; right:5px; top:14px; width:5px; height:5px; background:var(--navy);
+      box-shadow:-21px 0 0 var(--navy);
+    }
+    .char-body{width:46px;height:34px;left:6px;top:37px;background:var(--red)}
+    .char-arm{width:17px;height:28px;top:39px;background:#ffd2a3}
+    .char-arm.a1{left:-7px;transform:rotate(18deg)}
+    .char-arm.a2{right:-7px;transform:rotate(-18deg)}
+    .char-leg{width:15px;height:25px;top:68px;background:#274b82}
+    .char-leg.l1{left:10px;transform:skewX(-8deg)}
+    .char-leg.l2{left:33px;transform:skewX(8deg)}
+    .runner.walk .char-leg.l1{transform:translateY(-4px) skewX(-8deg)}
+    .runner.walk .char-leg.l2{transform:translateY(4px) skewX(8deg)}
+    .runner.walk .char-arm.a1{transform:rotate(-18deg)}
+    .runner.walk .char-arm.a2{transform:rotate(18deg)}
+
+    .block-card{
+      background:var(--paper);
+      border:5px solid var(--navy);
+      box-shadow:10px 10px 0 var(--navy);
+      padding:22px;
+    }
+    .block-card h2{
+      margin:0 0 18px;
+      font-size:clamp(28px,4vw,50px);
+      text-transform:uppercase;
+      line-height:1;
+    }
+    .tag{
+      display:inline-block; margin:5px 7px 5px 0; padding:8px 10px;
+      border:4px solid var(--navy); background:var(--white); box-shadow:4px 4px 0 rgba(16,35,63,.3);
+      font-weight:900;
+    }
+    .meter{
+      display:grid; grid-template-columns:120px 1fr 70px; gap:12px; align-items:center;
+      margin:13px 0;
+    }
+    .meter-label{font-weight:900}
+    .bar{
+      height:24px; border:4px solid var(--navy); background:#e5efe5; position:relative; overflow:hidden;
+    }
+    .bar > span{position:absolute;inset:0 auto 0 0;background:var(--blue);width:0}
+    .meter-val{text-align:right;font-weight:900}
+
+    /* sections */
+    .about{background:linear-gradient(#f8e89a,#f5d57a)}
+    .skill-zone{background:linear-gradient(#b6eff7,#d8fbff)}
+    .edu{background:linear-gradient(#ffd6a0,#ffeecb)}
+    .soft{background:linear-gradient(#c9f4cb,#eaffdb)}
+    .contact{background:linear-gradient(#1e2f52,#11213b);color:var(--white)}
+
+    .platforms{
+      position:absolute; inset:0; pointer-events:none;
+    }
+    .platform{
+      position:absolute; height:24px; border:5px solid var(--navy);
+      background:var(--brown); box-shadow:0 7px 0 rgba(16,35,63,.25);
+    }
+    .p1{width:230px;left:7%;bottom:18%}
+    .p2{width:280px;left:39%;bottom:27%}
+    .p3{width:220px;right:8%;bottom:20%}
+
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+    .timeline{
+      position:relative; padding-left:28px; border-left:7px dotted var(--navy);
+    }
+    .timeline-item{position:relative;margin:0 0 28px}
+    .timeline-item:before{
+      content:""; position:absolute; left:-43px; top:5px; width:22px;height:22px;
+      background:var(--red); border:5px solid var(--navy); border-radius:50%;
+    }
+    .timeline-item h3{margin:.1rem 0 .35rem;font-size:22px}
+    .timeline-item p{margin:.3rem 0;line-height:1.55}
+    .mini-card{
+      background:rgba(255,253,244,.9); border:4px solid var(--navy); padding:18px; box-shadow:7px 7px 0 var(--navy);
+    }
+    .mini-card strong{display:block;font-size:22px;margin-bottom:6px}
+    .small{font-size:14px;line-height:1.5}
+
+    .skill-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+    .skill-col{border:5px solid var(--navy);background:var(--white);padding:16px;box-shadow:8px 8px 0 rgba(16,35,63,.8)}
+    .skill-col h3{font-size:18px;margin:0 0 12px;text-transform:uppercase}
+
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+    .contact-box{border:5px solid var(--white);padding:22px;background:rgba(255,255,255,.07)}
+    .contact-box a{display:block;text-decoration:none;margin:12px 0;padding:12px;border:3px solid var(--white)}
+    .contact-box a:hover{background:var(--white);color:var(--navy)}
+    .note{font-size:13px;opacity:.82;line-height:1.55}
+
+    .scene-label{
+      position:absolute; top:78px; right:6vw;
+      background:var(--navy); color:var(--white); padding:10px 12px; border:4px solid var(--white);
+      text-transform:uppercase; font-weight:900; letter-spacing:.08em;
+    }
+
+    .floating{
+      position:absolute; border:4px solid var(--navy); background:var(--yellow);
+      padding:10px 12px; box-shadow:6px 6px 0 var(--navy);
+      font-weight:900; transform:rotate(-4deg);
+    }
+    .f1{left:9%;top:20%}.f2{right:12%;top:31%;transform:rotate(4deg)}.f3{left:17%;bottom:22%;transform:rotate(3deg)}
+
+    footer{
+      padding:30px 20px 48px; text-align:center; background:#0a1428; color:#dff8ff;
+      font-size:13px;
+    }
+
+    @media (max-width:900px){
+      .hero,.grid-2,.grid-3,.skill-columns,.contact-grid{grid-template-columns:1fr}
+      .hero-card{transform:none}
+      .meter{grid-template-columns:100px 1fr 60px}
+      .runner{left:16px}
+      .hud{inset:8px 8px auto}
+      .progress-wrap{width:42vw}
+      .section{padding-top:105px}
+      .scene-label{right:16px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *{animation:none!important;transition:none!important}
+    }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div class="hud-card brand">ARYAN // INTERACTIVE PORTFOLIO</div>
+    <div class="hud-card progress-wrap" aria-label="Page progress"><div class="progress" id="progress"></div></div>
+  </div>
+
+  <div class="runner" id="runner" aria-hidden="true">
+    <div class="char-head"></div>
+    <div class="char-body"></div>
+    <div class="char-arm a1"></div>
+    <div class="char-arm a2"></div>
+    <div class="char-leg l1"></div>
+    <div class="char-leg l2"></div>
+  </div>
+
+  <main class="world">
+    <section class="section sky" id="start">
+      <div class="pixel-sun"></div>
+      <div class="mountains"><div class="mountain m1"></div><div class="mountain m2"></div><div class="mountain m3"></div><div class="mountain m4"></div><div class="mountain m5"></div></div>
+      <div class="ground"></div>
+      <div class="section-inner hero">
+        <div>
+          <span class="kicker">INTERACTIVE RESUME MODE</span>
+          <h1>Aryan<br/>Maurya</h1>
+          <div class="lead">
+            Computer Engineering student building with <b>HTML, CSS, JavaScript, Python, React, TypeScript</b> and modern web tooling.
+          </div>
+        </div>
+        <div class="hero-card">
+          <h3>PLAYER PROFILE</h3>
+          <p><b>Location:</b> Mumbai, Maharashtra</p>
+          <p><b>Course:</b> B.E. — Computer Engineering</p>
+          <p><b>College:</b> Atharva College of Engineering, Mumbai University</p>
+          <p><b>Status:</b> First Year (SE)</p>
+          <p><b>Graduation:</b> 2029</p>
+          <p><b>Languages:</b> English • Hindi • Marathi</p>
+        </div>
+      </div>
+      <div class="scroll-cue">↓ SCROLL TO START THE RUN ↓</div>
+    </section>
+
+    <section class="section about" id="about">
+      <div class="scene-label">LEVEL 1 // ABOUT</div>
+      <div class="platforms"><div class="platform p1"></div><div class="platform p2"></div><div class="platform p3"></div></div>
+      <div class="floating f1">MUMBAI</div>
+      <div class="floating f2">B.E. 2029</div>
+      <div class="section-inner">
+        <div class="block-card" style="max-width:900px">
+          <h2>About the Player</h2>
+          <p style="font-size:20px;line-height:1.7;margin-bottom:24px">
+            Aryan Maurya is a Computer Engineering student at Atharva College of Engineering,
+            Mumbai University. The resume emphasizes a practical web-development toolkit,
+            problem solving, teamwork, communication, and quick learning.
+          </p>
+          <div class="grid-3">
+            <div class="mini-card"><strong>EDUCATION</strong><span class="small">B.E. Computer Engineering<br/>Expected 2029</span></div>
+            <div class="mini-card"><strong>BASE</strong><span class="small">Mumbai, Maharashtra<br/>India</span></div>
+            <div class="mini-card"><strong>FOCUS</strong><span class="small">Web technologies, programming, tools & collaboration</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section skill-zone" id="skills">
+      <div class="scene-label">LEVEL 2 // SKILLS</div>
+      <div class="section-inner">
+        <div class="block-card">
+          <h2>Skill Inventory</h2>
+          <div class="skill-columns">
+            <div class="skill-col">
+              <h3>Programming Languages</h3>
+              <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span><span class="tag">Python</span>
+            </div>
+            <div class="skill-col">
+              <h3>Tech Stack</h3>
+              <span class="tag">TailwindCSS</span><span class="tag">TypeScript</span><span class="tag">React</span><span class="tag">Node.js</span><span class="tag">Vite</span><span class="tag">Vinext</span>
+            </div>
+            <div class="skill-col">
+              <h3>Software & Tools</h3>
+              <span class="tag">Git</span><span class="tag">GitHub</span><span class="tag">AutoCAD (basic)</span><span class="tag">Windows</span><span class="tag">Linux (basic)</span>
+            </div>
+          </div>
+
+          <div style="margin-top:30px">
+            <div class="meter"><div class="meter-label">HTML</div><div class="bar"><span data-width="88%"></span></div><div class="meter-val">88%</div></div>
+            <div class="meter"><div class="meter-label">CSS</div><div class="bar"><span data-width="84%"></span></div><div class="meter-val">84%</div></div>
+            <div class="meter"><div class="meter-label">JavaScript</div><div class="bar"><span data-width="78%"></span></div><div class="meter-val">78%</div></div>
+            <div class="meter"><div class="meter-label">Python</div><div class="bar"><span data-width="72%"></span></div><div class="meter-val">72%</div></div>
+          </div>
+          <p class="small" style="margin-top:18px"><b>Note:</b> The resume lists skills but does not provide proficiency percentages. The bars above are visual placeholders for the game-style presentation and are not resume claims.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section edu" id="education">
+      <div class="scene-label">LEVEL 3 // EDUCATION</div>
+      <div class="section-inner grid-2">
+        <div class="block-card">
+          <h2>Education Quest</h2>
+          <div class="timeline">
+            <div class="timeline-item">
+              <h3>Bachelor of Engineering — Computer Engineering</h3>
+              <p><b>Atharva College of Engineering, Mumbai University</b></p>
+              <p>Year of Study: First Year (SE) • Expected Graduation: 2029</p>
+            </div>
+            <div class="timeline-item">
+              <h3>HSC — 12th Grade</h3>
+              <p>Board: HSC • Year: 2025 • <b>83.17%</b></p>
+            </div>
+            <div class="timeline-item">
+              <h3>SSC — 10th Grade</h3>
+              <p>Board: SSC • Year: 2023 • <b>85.8%</b></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="block-card">
+          <h2>Power-Ups</h2>
+          <div class="grid-2">
+            <div class="mini-card"><strong>PROBLEM SOLVING</strong><span class="small">Resume-listed soft skill</span></div>
+            <div class="mini-card"><strong>TEAM LEAD</strong><span class="small">Resume-listed soft skill</span></div>
+            <div class="mini-card"><strong>TEAMWORK</strong><span class="small">Collaboration mindset</span></div>
+            <div class="mini-card"><strong>TIME</strong><span class="small">Time management</span></div>
+            <div class="mini-card"><strong>COMMUNICATION</strong><span class="small">Communication skills</span></div>
+            <div class="mini-card"><strong>QUICK LEARNER</strong><span class="small">Continuous learning</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section soft" id="details">
+      <div class="scene-label">LEVEL 4 // PERSONAL DETAILS</div>
+      <div class="section-inner grid-2">
+        <div class="block-card">
+          <h2>Player Details</h2>
+          <div class="mini-card" style="margin-bottom:14px"><strong>Date of Birth</strong><span>13/03/2007</span></div>
+          <div class="mini-card" style="margin-bottom:14px"><strong>Languages Known</strong><span>English • Hindi • Marathi</span></div>
+          <div class="mini-card" style="margin-bottom:14px"><strong>Nationality</strong><span>Indian</span></div>
+          <div class="mini-card"><strong>Career Objective</strong><span class="small">The resume leaves this section blank, so no objective has been invented here.</span></div>
+        </div>
+        <div class="block-card">
+          <h2>Build Notes</h2>
+          <p style="line-height:1.7">
+            This portfolio recreates the <b>game-like scrolling resume idea</b> of the reference,
+            while using original CSS illustrations and your resume content rather than copying
+            the reference site's artwork or source code.
+          </p>
+          <div class="mini-card">
+            <strong>DEMO STATUS</strong>
+            <span class="small">Scroll-based character animation • responsive layout • keyboard-friendly page structure</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section contact" id="contact">
+      <div class="scene-label">FINAL LEVEL // CONTACT</div>
+      <div class="section-inner">
+        <div class="contact-grid">
+          <div>
+            <span class="kicker">MISSION COMPLETE</span>
+            <h2 style="font-size:clamp(40px,7vw,84px);line-height:.95;margin:20px 0">LET'S BUILD<br/>SOMETHING.</h2>
+            <p style="font-size:18px;line-height:1.7;max-width:680px">
+              Contact Aryan Maurya using the details provided in the resume.
+            </p>
+          </div>
+          <div class="contact-box">
+            <h3>CONTACT TERMINAL</h3>
+            <a href="tel:8692096902">📞 8692096902</a>
+            <a href="mailto:aryanmy13307@gmail.com">✉️ aryanmy13307@gmail.com</a>
+            <a href="https://www.linkedin.com/in/aryanmaurya" target="_blank" rel="noopener noreferrer">🔗 LinkedIn — add profile URL</a>
+            <p class="note">
+              Portfolio content is grounded in the uploaded resume. No professional experience,
+              awards, projects, or certifications were added because they were not present in the resume.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Built for Aryan Maurya • Interactive resume-inspired portfolio • © <span id="year"></span>
+  </footer>
+
+  <script>
+    const progress = document.getElementById("progress");
+    const runner = document.getElementById("runner");
+    const meters = document.querySelectorAll(".bar > span");
+
+    function updateScene(){
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const p = max <= 0 ? 0 : window.scrollY / max;
+      progress.style.width = (p * 100).toFixed(2) + "%";
+
+      // Move the character across the viewport based on scroll.
+      const x = 20 + p * Math.max(0, window.innerWidth - 120);
+      runner.style.left = x + "px";
+      runner.classList.toggle("walk", Math.floor(window.scrollY / 120) % 2 === 1);
+
+      document.querySelectorAll(".section").forEach(section => {
+        const rect = section.getBoundingClientRect();
+        const onScreen = rect.top < window.innerHeight * .72 && rect.bottom > window.innerHeight * .28;
+        if(onScreen && section.id === "skills"){
+          meters.forEach(m => m.style.width = m.dataset.width);
+        }
+      });
+    }
+
+    window.addEventListener("scroll", updateScene, {passive:true});
+    window.addEventListener("resize", updateScene);
+    document.getElementById("year").textContent = new Date().getFullYear();
+    updateScene();
+  </script>
+</body>
+</html>
